@@ -1,0 +1,3 @@
+[submodule "source/uart"]
+	path = source/uart
+	url = https://github.com/johonkanen/uart.git
