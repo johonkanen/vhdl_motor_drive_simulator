@@ -1,0 +1,8 @@
+*.swo
+*.*~
+*.swp
+vunit_out/
+ip/
+outflow/
+work_pnr/
+efinix_build/
