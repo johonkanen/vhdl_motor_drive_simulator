@@ -23,7 +23,6 @@ architecture rtl of system_hardware is
     alias main_clock is system_clocks.main_clock;
 
     signal uart_clocks   : uart_clock_group       ;
-    signal uart_FPGA_in  : uart_FPGA_input_group  ;
     signal uart_FPGA_out : uart_FPGA_output_group ;
     signal uart_data_in  : uart_data_input_group  ;
     signal uart_data_out : uart_data_output_group ;
@@ -36,7 +35,7 @@ begin
     uart_clocks <= (clock => main_clock);
     u_uart : uart
     port map( uart_clocks ,
-    	  uart_FPGA_in    ,
+    	  system_hardware_FPGA_in.uart_FPGA_in    ,
     	  uart_FPGA_out   ,
     	  uart_data_in    ,
     	  uart_data_out);
