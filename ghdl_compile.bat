@@ -18,7 +18,15 @@ ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/
 ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/ac_motor_models/pmsm_mechanical_model_pkg.vhd
 ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/ac_motor_models/permanent_magnet_motor_model_pkg.vhd
 
+ghdl -a --ieee=synopsys %source%/system_clocks_pkg.vhd
+
+
             ghdl -a --ieee=synopsys %source%/uart/uart_transreceiver/uart_tx/uart_tx_pkg.vhd
             ghdl -a --ieee=synopsys %source%/uart/uart_transreceiver/uart_rx/uart_rx_pkg.vhd
         ghdl -a --ieee=synopsys %source%/uart/uart_transreceiver/uart_transreceiver_pkg.vhd
     ghdl -a --ieee=synopsys %source%/uart/uart_pkg.vhd
+
+                ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_data_processing/motor_control_data_processing_pkg.vhd
+            ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_hardware_pkg.vhd
+        ghdl -a --ieee=synopsys %source%/system_control/system_hardware/system_hardware_pkg.vhd
+    ghdl -a --ieee=synopsys %source%/system_control/system_control_pkg.vhd
