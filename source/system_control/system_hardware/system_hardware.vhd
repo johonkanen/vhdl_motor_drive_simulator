@@ -20,6 +20,8 @@ end entity;
 
 architecture rtl of system_hardware is
 
+    alias main_clock is system_clocks.main_clock;
+
     signal uart_clocks   : uart_clock_group       ;
     signal uart_FPGA_in  : uart_FPGA_input_group  ;
     signal uart_FPGA_out : uart_FPGA_output_group ;
@@ -31,7 +33,7 @@ begin
     system_hardware_FPGA_out <= (uart_FPGA_out =>uart_FPGA_out);
 
 ------------------------------------------------------------------------
-    uart_clocks <= (clock => '1');
+    uart_clocks <= (clock => main_clock);
     u_uart : uart
     port map( uart_clocks ,
     	  uart_FPGA_in    ,
