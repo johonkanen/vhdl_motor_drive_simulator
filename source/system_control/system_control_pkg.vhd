@@ -16,10 +16,6 @@ package system_control_pkg is
         system_hardware_FPGA_out : system_hardware_FPGA_output_record;
     end record;
     
-    type system_control_FPGA_inout_record is record
-        system_hardware_FPGA_inout : system_hardware_FPGA_inout_record;
-    end record;
-    
     type system_control_data_input_record is record
         system_hardware_data_in  : system_hardware_data_input_record;
     end record;
