@@ -7,6 +7,8 @@ library work;
     use work.motor_control_hardware_pkg.all;
     use work.motor_control_data_processing_pkg.all;
 
+library math_library;
+
 entity motor_control_hardware is
     port (
         system_clocks                   : in system_clocks_record;
