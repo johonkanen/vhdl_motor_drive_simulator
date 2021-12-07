@@ -22,6 +22,7 @@ architecture simulated of motor_control_hardware is
 
     -- motor simulator libraries
         use math_library.multiplier_pkg.all;
+        use math_library.dq_to_ab_transform_pkg.all;
         use math_library.permanent_magnet_motor_model_pkg.all;
     -- end motor simulator libraries
     signal id_multiplier    : multiplier_record := init_multiplier;
