@@ -28,5 +28,6 @@ ghdl -a --ieee=synopsys %source%/system_clocks_pkg.vhd
 
                 ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_data_processing/motor_control_data_processing_pkg.vhd
             ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_hardware_pkg.vhd
+            ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_hardware.vhd
         ghdl -a --ieee=synopsys %source%/system_control/system_hardware/system_hardware_pkg.vhd
     ghdl -a --ieee=synopsys %source%/system_control/system_control_pkg.vhd

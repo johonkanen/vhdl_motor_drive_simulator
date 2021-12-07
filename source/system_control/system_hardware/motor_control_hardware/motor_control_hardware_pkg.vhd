@@ -4,6 +4,7 @@ library ieee;
 
 library work;
     use work.system_clocks_pkg.all;
+    use work.uart_pkg.all;
     use work.motor_control_data_processing_pkg.all;
 
 package motor_control_hardware_pkg is
