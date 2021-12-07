@@ -29,6 +29,7 @@ architecture rtl of system_hardware is
 
 begin
 
+------------------------------------------------------------------------
     system_hardware_FPGA_out <= (
                                     uart_FPGA_out => uart_FPGA_out);
 
@@ -46,4 +47,5 @@ begin
     	  uart_data_in    ,
     	  uart_data_out);
 
+------------------------------------------------------------------------
 end rtl;
