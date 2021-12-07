@@ -28,6 +28,7 @@ package motor_control_hardware_pkg is
     
     type motor_control_hardware_data_output_record is record
         motor_control_data_processing_data_out : motor_control_data_processing_data_output_record;
+        d_current : integer;
     end record;
     
     component motor_control_hardware is

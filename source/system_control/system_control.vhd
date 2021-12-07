@@ -55,7 +55,7 @@ begin
                     uart_data_counter <= 0;
                 end if;
                 counter_for_100khz <= counter_value_for_100khz;
-                transmit_16_bit_word_with_uart(uart_data_in , uart_data_counter);
+                transmit_16_bit_word_with_uart(uart_data_in , system_hardware_data_out.motor_control_hardware_data_out.d_current);
             end if;
 
         end if; --rising_edge

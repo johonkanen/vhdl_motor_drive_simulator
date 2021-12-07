@@ -38,7 +38,7 @@ proc get_vhdl_sources {void}\
                         /system_control/system_hardware/motor_control_hardware/motor_control_data_processing/motor_control_data_processing.vhd
                     /system_control/system_hardware/motor_control_hardware/motor_control_hardware_pkg.vhd
                     /system_control/system_hardware/motor_control_hardware/motor_control_hardware.vhd
-                    /system_control/system_hardware/arch_motor_control_hardware.vhd
+                    /system_control/system_hardware/motor_control_hardware/arch_motor_control_hardware.vhd
                 /system_control/system_hardware/system_hardware_pkg.vhd
                 /system_control/system_hardware/system_hardware.vhd
 

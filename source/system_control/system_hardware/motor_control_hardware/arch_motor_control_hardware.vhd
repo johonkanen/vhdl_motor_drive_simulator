@@ -77,6 +77,7 @@ begin
                     request_iq_calculation(pmsm_model , vq_input_voltage );
                 end if;
             --------------------------------------------------
+                motor_control_hardware_data_out.d_current <= get_d_component(pmsm_model);
         end if; --rising_edge
     end process motor_simulator;	
 
