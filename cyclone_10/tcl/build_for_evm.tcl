@@ -12,13 +12,13 @@ set output_dir ./output
 set need_to_close_project 0
 
 # Check that the right project is open
-if {[project_exists ac_psu]} \
+if {[project_exists motor_control]} \
 {
-    project_open -revision top ac_psu
+    project_open -revision top motor_control
 } \
 else \
 {
-    project_new -revision top ac_psu
+    project_new -revision top motor_control
 }
 set need_to_close_project 1
 #

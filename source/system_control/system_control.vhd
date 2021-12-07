@@ -25,10 +25,13 @@ architecture rtl of system_control is
     signal system_hardware_data_out : system_hardware_data_output_record;
 
     alias uart_data_in is system_hardware_data_in.uart_data_in;
+    alias uart_data_out is system_hardware_data_out.uart_data_out;
 
     constant counter_value_for_100khz : natural := 1199;
     signal counter_for_100khz : natural range 0 to 2047 := 1199;
     signal uart_data_counter : natural range 0 to 2**16-1 := 0;
+
+    signal uart_data_input : natural range 0 to 2**16-1 := 65535;
 
 begin
 
@@ -41,10 +44,16 @@ begin
         if rising_edge(main_clock) then
             init_uart(uart_data_in);
 
+            receive_data_from_uart(uart_data_out, uart_data_input);
+
             if counter_for_100khz > 0 then
                 counter_for_100khz <= counter_for_100khz - 1;
             else
-                uart_data_counter <= uart_data_counter + 1;
+                if uart_data_counter < uart_data_input then
+                    uart_data_counter <= uart_data_counter + 1;
+                else
+                    uart_data_counter <= 0;
+                end if;
                 counter_for_100khz <= counter_value_for_100khz;
                 transmit_16_bit_word_with_uart(uart_data_in , uart_data_counter);
             end if;
