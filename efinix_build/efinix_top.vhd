@@ -17,6 +17,9 @@ entity top is
     port (
         clk_120Mhz      : in std_logic  ;
         led             : out std_logic ;
+        led1            : out std_logic ;
+        led2            : out std_logic ;
+        led3            : out std_logic ;
         uart_rx         : in std_logic  ;
         main_pll_LOCKED : in std_logic;
         uart_tx         : out std_logic
@@ -35,6 +38,16 @@ architecture rtl of top is
     end record;
 
     constant init_counter : counter := (0,0, '0', 10e3);
+
+    type leds_record is record
+        led1 : std_logic;
+        led2 : std_logic;
+        led3 : std_logic;
+    end record;
+
+    constant init_leds : leds_record := ('1', '0', '1');
+
+    signal led_object : leds_record := init_leds;
 
 ------------------------------------------------------------------------
     procedure create_counter
@@ -103,10 +116,26 @@ architecture rtl of top is
 
     signal inductor_current : state_variable_record := init_state_variable_gain(5000);
     signal has_been_initialized : boolean := false;
+
+    procedure set_leds
+    (
+        signal leds : inout leds_record;
+        signal l1 : out std_logic;
+        signal l2 : out std_logic;
+        signal l3 : out std_logic
+    ) is
+    begin
+
+        l1 <= leds.led1;
+        l2 <= leds.led2;
+        l3 <= leds.led3;
+        
+    end set_leds;
 begin
 
     uart_FPGA_in.uart_transreceiver_FPGA_in.uart_rx_FPGA_in.uart_rx <= uart_rx;
     uart_tx <= uart_FPGA_out.uart_transreceiver_FPGA_out.uart_tx_FPGA_out.uart_tx;
+
 
 ------------------------------------------------------------------------
     led_blink : process(clk_120Mhz)
@@ -120,26 +149,29 @@ begin
             create_multiplier(sincos_multiplier);
             create_sincos(sincos_multiplier, sincos);
 
+            set_leds(led_object, led1, led2, led3);
+
             create_multiplier(multiplier(id));
             create_multiplier(multiplier(iq));
             create_multiplier(multiplier(w));
             create_multiplier(multiplier(angle));
             create_state_variable(inductor_current, multiplier(id), 5000);
             sequential_multiply(multiplier(iq), get_cosine(sincos), 55000);
-            -- create_pmsm_model(
-            --     pmsm_model        ,
-            --     multiplier(id)    ,
-            --     multiplier(iq)    ,
-            --     multiplier(w)     ,
-            --     multiplier(angle) ,
-            --     vd_input_voltage  ,
-            --     vq_input_voltage      );
+
+            create_pmsm_model(
+                pmsm_model        ,
+                multiplier(id)    ,
+                multiplier(iq)    ,
+                multiplier(w)     ,
+                multiplier(angle) ,
+                vd_input_voltage  ,
+                vq_input_voltage      );
 
             if counter_for_100khz > 0 then
                 counter_for_100khz <= counter_for_100khz - 1;
             else
                 counter_for_100khz <= 1200;
-                transmit_16_bit_word_with_uart(uart_data_in, inductor_current.state);
+                transmit_16_bit_word_with_uart(uart_data_in, pmsm_model.id_current_model.id_current.state);
                 request_sincos(sincos, counter_for_uart);
                 counter_for_uart <= counter_for_uart + 1;
 
