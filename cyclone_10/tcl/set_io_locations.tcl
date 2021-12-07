@@ -1,0 +1,4 @@
+set_location_assignment $main_clock -to pll_input_clock 
+
+set_location_assignment $uart_rx -to system_control_FPGA_in.system_hardware_FPGA_in.uart_FPGA_in.uart_transreceiver_FPGA_in.uart_rx_FPGA_in.uart_rx
+set_location_assignment $uart_tx -to system_control_FPGA_out.system_hardware_FPGA_out.uart_FPGA_out.uart_transreceiver_FPGA_out.uart_tx_FPGA_out.uart_tx
