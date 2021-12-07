@@ -21,11 +21,13 @@ package system_hardware_pkg is
     end record;
     
     type system_hardware_data_input_record is record
-        motor_control_hardware_data_in  : motor_control_hardware_data_input_record;
+        -- motor_control_hardware_data_in  : motor_control_hardware_data_input_record;
+        uart_data_in  : uart_data_input_group  ;
     end record;
     
     type system_hardware_data_output_record is record
-        motor_control_hardware_data_out : motor_control_hardware_data_output_record;
+        -- motor_control_hardware_data_out : motor_control_hardware_data_output_record;
+        uart_data_out : uart_data_output_group ;
     end record;
     
     component system_hardware is

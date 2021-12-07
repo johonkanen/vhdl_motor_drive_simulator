@@ -29,10 +29,16 @@ architecture rtl of system_hardware is
 
 begin
 
-    system_hardware_FPGA_out <= (uart_FPGA_out =>uart_FPGA_out);
+    system_hardware_FPGA_out <= (
+                                    uart_FPGA_out => uart_FPGA_out);
+
+    system_hardware_data_out <= (
+                                    uart_data_out => uart_data_out);
 
 ------------------------------------------------------------------------
-    uart_clocks <= (clock => main_clock);
+    uart_clocks  <= (clock => main_clock);
+    uart_data_in <= system_hardware_data_in.uart_data_in;
+
     u_uart : uart
     port map( uart_clocks ,
     	  system_hardware_FPGA_in.uart_FPGA_in    ,
