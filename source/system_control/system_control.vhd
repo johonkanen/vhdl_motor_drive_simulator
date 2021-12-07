@@ -23,9 +23,11 @@ architecture rtl of system_control is
 
 begin
 
+------------------------------------------------------------------------
     system_control_FPGA_out <= (
                                system_hardware_FPGA_out => system_hardware_FPGA_out);
 
+------------------------------------------------------------------------
     u_system_hardware : system_hardware
     port map( system_clocks        ,
     	  system_control_FPGA_in.system_hardware_FPGA_in  ,
