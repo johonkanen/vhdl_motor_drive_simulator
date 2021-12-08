@@ -53,6 +53,10 @@ architecture simulated of motor_control_hardware is
     signal sincos_multiplier : multiplier_record := init_multiplier;
     signal sincos : sincos_record := init_sincos;
 
+    signal stimulus_counter : natural range 0 to 2**16-1 := 65535;
+
+    signal speed_reference : int18 := -20e3;
+
 begin
     motor_control_hardware_FPGA_out <= (motor_control_data_processing_FPGA_out => motor_control_data_processing_FPGA_out);
 
@@ -86,17 +90,36 @@ begin
                 else
                     simulator_counter <= counter_at_100khz;
 
+
                     request_electrical_angle_calculation(pmsm_model);
                     request_angular_speed_calculation(pmsm_model);
                     request_id_calculation(pmsm_model , vd_input_voltage);
                     request_iq_calculation(pmsm_model , vq_input_voltage );
+
+                    if stimulus_counter > 0 then
+                        stimulus_counter <= stimulus_counter - 1;
+                    else
+                        stimulus_counter <= 65535;
+                    end if;
                 end if;
+
+
+                CASE stimulus_counter is
+                    WHEN 32768 => set_load_torque(pmsm_model, 20e3);
+                    WHEN 16384 => speed_reference <= 10e3;
+                    WHEN 49152 => speed_reference <= 20e3;
+                    WHEN 0 => set_load_torque(pmsm_model, -20e3);
+                    WHEN others => -- do nothing
+                end CASE;
+
+
             --------------------------------------------------
                 motor_control_hardware_data_out.d_current <= get_angular_speed(pmsm_model);
 
                 motor_control_data_processing_data_in <= (angular_speed => get_angular_speed(pmsm_model),
                                                          d_current      => get_d_component(pmsm_model),
-                                                         q_current      => get_q_component(pmsm_model));
+                                                         q_current      => get_q_component(pmsm_model),
+                                                        speed_reference => speed_reference);
 
         end if; --rising_edge
     end process motor_simulator;	

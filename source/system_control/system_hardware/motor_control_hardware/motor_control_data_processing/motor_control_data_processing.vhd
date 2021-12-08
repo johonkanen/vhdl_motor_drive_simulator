@@ -82,7 +82,7 @@ begin
 
                 request_motor_current_control(id_current_control);
                 request_motor_current_control(iq_current_control);
-                request_pi_control(speed_controller, speed_reference - motor_control_data_processing_data_in.angular_speed);
+                request_pi_control(speed_controller, motor_control_data_processing_data_in.speed_reference - motor_control_data_processing_data_in.angular_speed);
             end if;
 
             motor_control_data_processing_data_out <= (vd_voltage => -get_control_output(id_current_control),
