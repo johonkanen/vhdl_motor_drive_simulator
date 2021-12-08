@@ -33,6 +33,10 @@ foreach x [get_vhdl_sources ../] \
     { \
         set_global_assignment -name VHDL_FILE $source_folder/$x -library math_library
     } \
+    elseif {[lsearch -glob $x *dynamic_simulation_library*] == 0} \
+    { \
+        set_global_assignment -name VHDL_FILE $source_folder/$x -library math_library
+    } \
     elseif {[lsearch -glob $x *cl10_hw_library*] == 0} \
     {
         set_global_assignment -name VHDL_FILE $source_folder/$x -library cl10_hw_library
