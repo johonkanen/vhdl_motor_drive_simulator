@@ -20,11 +20,14 @@ package motor_control_data_processing_pkg is
     end record;
     
     type motor_control_data_processing_data_input_record is record
-        data : std_logic;
+        angular_speed : integer;
+        d_current     : integer;
+        q_current     : integer;
     end record;
     
     type motor_control_data_processing_data_output_record is record
-        data : std_logic;
+        vd_voltage : integer;
+        vq_voltage : integer;
     end record;
     
     component motor_control_data_processing is

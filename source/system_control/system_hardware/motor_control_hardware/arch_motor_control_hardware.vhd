@@ -24,6 +24,7 @@ architecture simulated of motor_control_hardware is
         use math_library.multiplier_pkg.all;
         use math_library.dq_to_ab_transform_pkg.all;
         use math_library.permanent_magnet_motor_model_pkg.all;
+        use math_library.sincos_pkg.all;
     -- end motor simulator libraries
     signal id_multiplier    : multiplier_record := init_multiplier;
     signal iq_multiplier    : multiplier_record := init_multiplier;
@@ -40,11 +41,17 @@ architecture simulated of motor_control_hardware is
     
     signal pmsm_model : permanent_magnet_motor_model_record := init_permanent_magnet_motor_model;
 
-    constant counter_at_100khz : natural := 1200;
-    signal simulator_counter : natural range 0 to 2**12-1 := 1200;
+    constant counter_at_100khz : natural := 1199;
+    signal simulator_counter : natural range 0 to 2**12-1 := counter_at_100khz;
 
-    signal vd_input_voltage : int18 := 300;
-    signal vq_input_voltage : int18 := -300;
+    alias vd_input_voltage is motor_control_data_processing_data_out.vd_voltage;
+    alias vq_input_voltage is motor_control_data_processing_data_out.vq_voltage;
+
+    signal transform_multiplier : multiplier_record := init_multiplier;
+    signal dq_to_ab_transform : dq_to_ab_record := init_dq_to_ab_transform;
+
+    signal sincos_multiplier : multiplier_record := init_multiplier;
+    signal sincos : sincos_record := init_sincos;
 
 begin
     motor_control_hardware_FPGA_out <= (motor_control_data_processing_FPGA_out => motor_control_data_processing_FPGA_out);
@@ -58,6 +65,13 @@ begin
             create_multiplier(iq_multiplier);
             create_multiplier(w_multiplier);
             create_multiplier(angle_multiplier);
+            create_multiplier(transform_multiplier);
+            create_multiplier(sincos_multiplier);
+
+
+            --------------------------------------------------
+            create_sincos(sincos_multiplier, sincos);
+            request_sincos(sincos, get_electrical_angle(pmsm_model));
             --------------------------------------------------
             create_pmsm_model(
                 pmsm_model       ,
@@ -78,11 +92,17 @@ begin
                     request_iq_calculation(pmsm_model , vq_input_voltage );
                 end if;
             --------------------------------------------------
-                motor_control_hardware_data_out.d_current <= get_d_component(pmsm_model);
+                motor_control_hardware_data_out.d_current <= get_angular_speed(pmsm_model);
+
+                motor_control_data_processing_data_in <= (angular_speed => get_angular_speed(pmsm_model),
+                                                         d_current      => get_d_component(pmsm_model),
+                                                         q_current      => get_q_component(pmsm_model));
+
         end if; --rising_edge
     end process motor_simulator;	
 
 
+------------------------------------------------------------------------
     u_motor_control_data_processing : motor_control_data_processing
     port map( system_clocks ,
     	  motor_control_hardware_FPGA_in.motor_control_data_processing_FPGA_in       ,
@@ -90,4 +110,5 @@ begin
     	  motor_control_data_processing_data_in       ,
     	  motor_control_data_processing_data_out);
 
+------------------------------------------------------------------------
 end simulated;

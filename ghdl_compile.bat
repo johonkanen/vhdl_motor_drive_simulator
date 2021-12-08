@@ -8,6 +8,7 @@ ghdl -a --ieee=synopsys --work=math_library %source%/math_library/division/divis
 ghdl -a --ieee=synopsys --work=math_library %source%/math_library/first_order_filter/first_order_filter_pkg.vhd
 ghdl -a --ieee=synopsys --work=math_library %source%/math_library/pi_controller/pi_controller_pkg.vhd
 ghdl -a --ieee=synopsys --work=math_library %source%/math_library/coordinate_transforms/ab_to_dq_transform/dq_to_ab_transform_pkg.vhd
+ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/ac_motor_models/field_oriented_motor_control/field_oriented_motor_control_pkg.vhd
 
 ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/state_variable/state_variable_pkg.vhd
 ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/lcr_filter_model/lcr_filter_model_pkg.vhd
