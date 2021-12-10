@@ -72,7 +72,7 @@ begin
                 get_pi_control_output(speed_controller)-motor_control_data_processing_data_in.q_current , motor_control_data_processing_data_in.d_current);
             --------------------------------------------------
             create_multiplier(speed_control_multiplier);
-            create_pi_controller(speed_control_multiplier, speed_controller, 30000, 2500);
+            create_pi_controller(speed_control_multiplier, speed_controller, 4000, 250);
 
             --------------------------------------------------
             if counter_for_100khz > 0 then

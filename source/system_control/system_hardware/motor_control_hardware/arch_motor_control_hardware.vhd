@@ -56,6 +56,7 @@ architecture simulated of motor_control_hardware is
     signal stimulus_counter : natural range 0 to 2**16-1 := 65535;
 
     signal speed_reference : int18 := -20e3;
+    signal speed_loop_counter : natural range 0 to 15 := 0;
 
 begin
     motor_control_hardware_FPGA_out <= (motor_control_data_processing_FPGA_out => motor_control_data_processing_FPGA_out);
@@ -91,8 +92,6 @@ begin
                     simulator_counter <= counter_at_100khz;
 
 
-                    request_electrical_angle_calculation(pmsm_model);
-                    request_angular_speed_calculation(pmsm_model);
                     request_id_calculation(pmsm_model , vd_input_voltage);
                     request_iq_calculation(pmsm_model , vq_input_voltage );
 
@@ -101,13 +100,22 @@ begin
                     else
                         stimulus_counter <= 65535;
                     end if;
+
+                    speed_loop_counter <= speed_loop_counter + 1;
+                    if speed_loop_counter = 9 then
+                        speed_loop_counter <= 0;
+                        request_electrical_angle_calculation(pmsm_model);
+                        request_angular_speed_calculation(pmsm_model);
+                    end if;
                 end if;
+
+
 
 
                 CASE stimulus_counter is
                     WHEN 32768 => set_load_torque(pmsm_model, 20e3);
                     WHEN 16384 => speed_reference <= 10e3;
-                    WHEN 49152 => speed_reference <= 20e3;
+                    WHEN 49152 => speed_reference <= -20e3;
                     WHEN 0 => set_load_torque(pmsm_model, -20e3);
                     WHEN others => -- do nothing
                 end CASE;
