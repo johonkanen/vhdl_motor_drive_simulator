@@ -107,11 +107,11 @@ architecture rtl of top is
 
 ------------------------------------------------------------------------
     signal sine_vector : std_logic_vector(15 downto 0) := (others => '0');
+    signal test : std_logic := '0';
 
 ------------------------------------------------------------------------
 begin
 
-    uart_FPGA_in.uart_transreceiver_FPGA_in.uart_rx_FPGA_in.uart_rx <= uart_rx;
     uart_tx <= uart_FPGA_out.uart_transreceiver_FPGA_out.uart_tx_FPGA_out.uart_tx;
 
 ------------------------------------------------------------------------
@@ -135,12 +135,13 @@ begin
 
 
             -- if button(1) = '1' then
-                led  <= sine_vector(15);
+                -- led  <= sine_vector(15);
                 led1 <= sine_vector(14);
-                led2 <= sine_vector(13);
+                -- led2 <= sine_vector(13);
                 led3 <= sine_vector(12);
             -- end if;
-                led  <= button_1;
+                test  <= button_1;
+                led <= test;
                 led2 <= button_2;
 
 
@@ -157,6 +158,8 @@ begin
     end process led_blink;	
 
     uart_clocks <= (clock => clk_120Mhz);
+
+    uart_FPGA_in <= (uart_transreceiver_FPGA_in=>(uart_rx_FPGA_in=>(uart_rx => (uart_rx))));
 
     u_uart : uart
     port map( uart_clocks,
