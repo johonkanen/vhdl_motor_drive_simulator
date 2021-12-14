@@ -36,11 +36,11 @@ architecture rtl of motor_control_data_processing is
 
     signal speed_control_multiplier : multiplier_record := init_multiplier;
     signal speed_controller : pi_controller_record := init_pi_controller;
-    signal d_reference : int18 := -5000;
+    signal d_reference : int18 := 0;
 
     signal speed_reference : int18 := 15e3;
 
-    signal counter_for_100khz : natural range 0 to 2**12-1 := 1199;
+    signal counter_for_100khz : natural range 0 to 2**12-1 := 1000;
     
 begin
 
@@ -59,7 +59,8 @@ begin
                 default_motor_parameters.Lq                                 ,
                 motor_control_data_processing_data_in.angular_speed         ,
                 default_motor_parameters.rotor_resistance                   ,
-                d_reference-motor_control_data_processing_data_in.d_current , motor_control_data_processing_data_in.q_current);
+                d_reference-motor_control_data_processing_data_in.d_current , 
+                motor_control_data_processing_data_in.q_current);
 
             --------------------------------------------------
             create_multiplier(control_multiplier2);
@@ -69,7 +70,8 @@ begin
                 default_motor_parameters.Ld                                                             ,
                 motor_control_data_processing_data_in.angular_speed                                     ,
                 default_motor_parameters.rotor_resistance                                               ,
-                get_pi_control_output(speed_controller)-motor_control_data_processing_data_in.q_current , motor_control_data_processing_data_in.d_current);
+                get_pi_control_output(speed_controller)-motor_control_data_processing_data_in.q_current ,
+                motor_control_data_processing_data_in.d_current);
             --------------------------------------------------
             create_multiplier(speed_control_multiplier);
             create_pi_controller(speed_control_multiplier, speed_controller, 4000, 250);
@@ -78,7 +80,7 @@ begin
             if counter_for_100khz > 0 then
                 counter_for_100khz <= counter_for_100khz - 1;
             else
-                counter_for_100khz <= 1199;
+                counter_for_100khz <= 1000;
 
                 request_motor_current_control(id_current_control);
                 request_motor_current_control(iq_current_control);

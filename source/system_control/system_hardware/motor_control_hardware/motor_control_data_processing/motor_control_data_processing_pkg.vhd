@@ -20,6 +20,7 @@ package motor_control_data_processing_pkg is
     end record;
     
     type motor_control_data_processing_data_input_record is record
+        angle : integer;
         angular_speed : integer;
         d_current     : integer;
         q_current     : integer;

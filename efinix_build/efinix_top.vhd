@@ -8,14 +8,12 @@ library work;
 library math_library;
     use math_library.multiplier_pkg.all;
     use math_library.sincos_pkg.all;
-    use math_library.permanent_magnet_motor_model_pkg.all;
-    use math_library.pmsm_electrical_model_pkg.all;
-    use math_library.pmsm_mechanical_model_pkg.all;
-    use math_library.state_variable_pkg.all;
 
 entity top is
     port (
         clk_120Mhz      : in std_logic  ;
+        button_1        : in std_logic;
+        button_2        : in std_logic;
         led             : out std_logic ;
         led1            : out std_logic ;
         led2            : out std_logic ;
@@ -39,16 +37,6 @@ architecture rtl of top is
 
     constant init_counter : counter := (0,0, '0', 10e3);
 
-    type leds_record is record
-        led1 : std_logic;
-        led2 : std_logic;
-        led3 : std_logic;
-    end record;
-
-    constant init_leds : leds_record := ('1', '0', '1');
-
-    signal led_object : leds_record := init_leds;
-
 ------------------------------------------------------------------------
     procedure create_counter
     (
@@ -69,23 +57,17 @@ architecture rtl of top is
         end if;
         
     end create_counter;
-------------------------------------------------------------------------
-    signal led_blinker : counter := init_counter;
-    signal fast_limit : natural range 0 to 2**16-1 := init_counter.fast_limit;
-------------------------------------------------------------------------
 
-    signal uart_clocks   : uart_clock_group;
-    signal uart_FPGA_in  : uart_FPGA_input_group;
-    signal uart_FPGA_out : uart_FPGA_output_group;
-    signal uart_data_in  : uart_data_input_group;
-    signal uart_data_out : uart_data_output_group;
-
-    signal counter_for_100khz : natural range 0 to 2**12-1 := 1200;
-    signal counter_for_uart : natural range 0 to 2**16-1 := 0;
 ------------------------------------------------------------------------
-    signal sincos_multiplier : multiplier_record := init_multiplier;
-    signal sincos : sincos_record := init_sincos;
-    signal sine : natural range 0 to 2**16-1 := 0;
+    procedure create_counter
+    (
+        signal counter_object : inout counter;
+        signal led_io : out std_logic
+    ) is
+    begin
+        create_counter(counter_object, led_io, counter_object.fast_limit);
+        
+    end create_counter;
 
     function limit_to_32767
     (
@@ -100,99 +82,76 @@ architecture rtl of top is
             return number;
         end if;
     end limit_to_32767;
+
 ------------------------------------------------------------------------
-    type abc is (phase_a, phase_b, phase_c, id, iq, w, angle);
-    type multiplier_array is array (abc range abc'left to abc'right) of multiplier_record;
-    signal multiplier : multiplier_array := (init_multiplier,init_multiplier, init_multiplier, init_multiplier, init_multiplier, init_multiplier, init_multiplier);
+    signal led_blinker  : counter                    := init_counter;
+    signal led_blinker1 : counter                    := init_counter;
+    signal led_blinker2 : counter                    := init_counter;
+    signal led_blinker3 : counter                    := init_counter;
+    signal fast_limit   : natural range 0 to 2**16-1 := init_counter.fast_limit;
 
-    signal vd_input_voltage : int18 := 300;
-    signal vq_input_voltage : int18 := -300;
+------------------------------------------------------------------------
+    signal uart_clocks   : uart_clock_group;
+    signal uart_FPGA_in  : uart_FPGA_input_group;
+    signal uart_FPGA_out : uart_FPGA_output_group;
+    signal uart_data_in  : uart_data_input_group;
+    signal uart_data_out : uart_data_output_group;
 
-    signal pmsm_model : permanent_magnet_motor_model_record := init_permanent_magnet_motor_model;
+    signal counter_for_100khz : natural range 0 to 2**12-1 := 1200;
+    signal counter_for_uart : natural range 0 to 2**16-1 := 0;
 
-    alias id_multiplier is multiplier(id);
-    alias iq_multiplier is multiplier(iq);
-    alias w_multiplier is multiplier(w);
+------------------------------------------------------------------------
+    signal sincos_multiplier : multiplier_record := init_multiplier;
+    signal sincos : sincos_record := init_sincos;
+    signal sine : natural range 0 to 2**16-1 := 0;
 
-    signal inductor_current : state_variable_record := init_state_variable_gain(5000);
-    signal has_been_initialized : boolean := false;
+------------------------------------------------------------------------
+    signal sine_vector : std_logic_vector(15 downto 0) := (others => '0');
 
-    procedure set_leds
-    (
-        signal leds : inout leds_record;
-        signal l1 : out std_logic;
-        signal l2 : out std_logic;
-        signal l3 : out std_logic
-    ) is
-    begin
-
-        l1 <= leds.led1;
-        l2 <= leds.led2;
-        l3 <= leds.led3;
-        
-    end set_leds;
+------------------------------------------------------------------------
 begin
 
     uart_FPGA_in.uart_transreceiver_FPGA_in.uart_rx_FPGA_in.uart_rx <= uart_rx;
     uart_tx <= uart_FPGA_out.uart_transreceiver_FPGA_out.uart_tx_FPGA_out.uart_tx;
-
 
 ------------------------------------------------------------------------
     led_blink : process(clk_120Mhz)
         
     begin
         if rising_edge(clk_120Mhz) then
-            receive_data_from_uart(uart_data_out, inductor_current.integrator_gain);
-            create_counter(led_blinker, led, fast_limit);
-
             init_uart(uart_data_in);
+            receive_data_from_uart(uart_data_out, led_blinker2.fast_limit);
+
+            create_counter(led_blinker, led, fast_limit); -- this blinks as fast_limit is not record type
+            create_counter(led_blinker1, led1);           -- this does not blink, initial record value lost
+            create_counter(led_blinker2, led2);           -- this initializes fast_blink with 0
+            create_counter(led_blinker3, led3);           -- this blinks, as fast limit driven with constant
+            led_blinker3.fast_limit <= 25e3;
+
             create_multiplier(sincos_multiplier);
             create_sincos(sincos_multiplier, sincos);
 
-            set_leds(led_object, led1, led2, led3);
+            sine_vector <= std_logic_vector(to_unsigned(limit_to_32767(get_sine(sincos)),16));
 
-            create_multiplier(multiplier(id));
-            create_multiplier(multiplier(iq));
-            create_multiplier(multiplier(w));
-            create_multiplier(multiplier(angle));
-            create_state_variable(inductor_current, multiplier(id), 5000);
-            sequential_multiply(multiplier(iq), get_cosine(sincos), 55000);
 
-            create_pmsm_model(
-                pmsm_model        ,
-                multiplier(id)    ,
-                multiplier(iq)    ,
-                multiplier(w)     ,
-                multiplier(angle) ,
-                vd_input_voltage  ,
-                vq_input_voltage      );
+            -- if button(1) = '1' then
+                led  <= sine_vector(15);
+                led1 <= sine_vector(14);
+                led2 <= sine_vector(13);
+                led3 <= sine_vector(12);
+            -- end if;
+                led  <= button_1;
+                led2 <= button_2;
+
 
             if counter_for_100khz > 0 then
                 counter_for_100khz <= counter_for_100khz - 1;
             else
                 counter_for_100khz <= 1200;
-                transmit_16_bit_word_with_uart(uart_data_in, pmsm_model.id_current_model.id_current.state);
+                transmit_16_bit_word_with_uart(uart_data_in, led_blinker2.fast_limit);
                 request_sincos(sincos, counter_for_uart);
                 counter_for_uart <= counter_for_uart + 1;
 
-                request_state_variable_calculation(inductor_current);
-                request_id_calculation(pmsm_model);
-                request_iq_calculation(pmsm_model);
-                request_angular_speed_calculation(pmsm_model);
-
-                if counter_for_uart = 32768 then
-                    set_load_torque(pmsm_model, 1000);
-                end if;
-                if counter_for_uart = 0 then
-                    set_load_torque(pmsm_model, -1000);
-                end if;
-
-
-                -- if not has_been_initialized then
-                --     has_been_initialized <= true;
-                --     inductor_current <= init_state_variable_gain(5000);
-                --     pmsm_model <= init_permanent_magnet_motor_model;
-                -- end if;
             end if;
         end if; --rising_edge
     end process led_blink;	

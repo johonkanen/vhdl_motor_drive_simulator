@@ -124,10 +124,11 @@ begin
             --------------------------------------------------
                 motor_control_hardware_data_out.d_current <= get_angular_speed(pmsm_model);
 
-                motor_control_data_processing_data_in <= (angular_speed => get_angular_speed(pmsm_model),
-                                                         d_current      => get_d_component(pmsm_model),
-                                                         q_current      => get_q_component(pmsm_model),
-                                                        speed_reference => speed_reference);
+                motor_control_data_processing_data_in <= (angular_speed  => get_angular_speed(pmsm_model),
+                                                         angle           => get_electrical_angle(pmsm_model),
+                                                         d_current       => get_d_component(pmsm_model),
+                                                         q_current       => get_q_component(pmsm_model),
+                                                         speed_reference => speed_reference);
 
         end if; --rising_edge
     end process motor_simulator;	
