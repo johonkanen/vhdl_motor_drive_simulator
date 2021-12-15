@@ -9,6 +9,7 @@ library work;
 library math_library;
     use math_library.multiplier_pkg.all;
     use math_library.sincos_pkg.all;
+    use math_library.lcr_filter_model_pkg.all;
 
 entity top is
     port (
@@ -33,10 +34,30 @@ architecture rtl of top is
     signal led_blinker  : counter                    := init_counter;
     signal led_blinker1 : counter                    := init_counter;
     signal led_blinker2 : counter                    := init_counter;
-    signal led_blinker3 : counter                    := (fast_counter => init_counter.fast_counter ,
-                                                         slow_counter => init_counter.slow_counter ,
-                                                         led_state    => init_counter.led_state    ,
-                                                         fast_limit   => init_counter.fast_limit  );
+
+    -- this does not work
+    signal led_blinker3 : counter                    := (0,0,'0',25e3);
+
+    signal lcr_filter : lcr_model_record := init_lcr_filter;
+
+-- this does not work
+    -- signal led_blinker3 : counter := (init_counter.fast_counter ,
+    --                                  init_counter.slow_counter  ,
+    --                                  init_counter.led_state     ,
+    --                                  init_counter.fast_limit  );
+-- this does not work
+    -- signal led_blinker3 : counter := (fast_counter => 0   ,
+    --                                   slow_counter => 0   ,
+    --                                   led_state    => '0' ,
+    --                                   fast_limit   => 25e3  );
+
+-- this does not work
+    -- signal led_blinker3 : counter := (fast_counter => init_counter.fast_counter ,
+    --                                   slow_counter => init_counter.slow_counter ,
+    --                                   led_state    => init_counter.led_state    ,
+    --                                   fast_limit   => init_counter.fast_limit  );
+    signal filter_capacitor_state : int18 := 0;
+    signal filter_inductor_state  : int18 := 0;
 
 ------------------------------------------------------------------------
     signal uart_clocks   : uart_clock_group;
@@ -65,21 +86,24 @@ begin
         if rising_edge(clk_120Mhz) then
             init_uart(uart_data_in);
 
-            create_counter(led_blinker , led , fast_limit); -- this blinks
+            create_counter(led_blinker , led , fast_limit); -- this blinks as fast limit is used
             create_counter(led_blinker1, led1);             -- this does not blink, initial record value 0
-            create_counter(led_blinker2, led2);             -- this works correctly, the button seems to fix it
+            create_counter(led_blinker2, led2);             -- this blinks correctly, the precense of the button seems to fix intial value problem
             if button_is_pressed(button_2) then
                 led_blinker2.fast_limit <= 38e3;
             end if;
 
-            create_counter(led_blinker3, led3);             -- this blinks correctly
+            create_counter(led_blinker3, led3, led_blinker3.fast_limit); -- this blinks correctly
 
             create_multiplier(sincos_multiplier);     -- this is a multiplier with interface functions
             create_sincos(sincos_multiplier, sincos); -- this creates a state machine for calculating sine/cosine functions
 
+             -- this creates a state machine for lcr filter simulator, but it crashes the build
+            -- create_lcr_filter(lcr_filter, sincos_multiplier, 10- lcr_filter.capacitor_voltage.state , lcr_filter.inductor_current.state);
+
             -- knight rider 
             if button_is_pressed(button_1) then
-                if get_sine(sincos) > 0 then
+                if get_cosine(sincos) > 0 then
                     led3 <= set_1_when_larger_than(get_sine(sincos), 13e3);
                     led2 <= set_1_when_larger_than(get_sine(sincos), 18e3);
                     led1 <= set_1_when_larger_than(get_sine(sincos), 22e3);
@@ -98,6 +122,7 @@ begin
                 counter_for_100khz <= 5000;
                 transmit_16_bit_word_with_uart(uart_data_in, get_cosine(sincos));
                 request_sincos(sincos, counter_for_uart);
+                calculate_lcr_filter(lcr_filter);
                 counter_for_uart <= counter_for_uart + 1;
             end if;
 
