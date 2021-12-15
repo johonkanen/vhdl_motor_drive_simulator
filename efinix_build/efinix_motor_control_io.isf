@@ -1,0 +1,59 @@
+# Efinity Interface Configuration
+# Version: 2021.1.165.4.10
+# Date: 2021-12-14 15:18
+#
+# Copyright (C) 2017 - 2021 Efinix Inc. All rights reserved.
+#
+# Device: T120F324
+# Package: 324-ball FBGA (final)
+# Project: efinix_motor_control
+# Configuration mode: active (x1)
+# Timing Model: C4 (final)
+
+
+# Create instance
+design.create_input_gpio("button_1")
+design.create_input_gpio("button_2")
+design.create_pll_input_clock_gpio("extclk_30mhz")
+design.create_output_gpio("led")
+design.create_output_gpio("led1")
+design.create_output_gpio("led2")
+design.create_output_gpio("led3")
+design.create_input_gpio("uart_rx")
+design.create_output_gpio("uart_tx")
+design.create_block("main_pll","PLL")
+
+# Set property, non-defaults
+design.set_property("button_1","PULL_OPTION","WEAK_PULLUP")
+design.set_property("led","DRIVE_STRENGTH","3")
+design.set_property("led1","DRIVE_STRENGTH","3")
+design.set_property("led2","DRIVE_STRENGTH","3")
+design.set_property("led3","DRIVE_STRENGTH","3")
+design.set_property("uart_tx","DRIVE_STRENGTH","3")
+design.set_property("main_pll","CLKOUT0_EN","1","PLL")
+design.set_property("main_pll","CLKOUT1_EN","0","PLL")
+design.set_property("main_pll","CLKOUT2_EN","0","PLL")
+design.set_property("main_pll","REFCLK_SOURCE","EXTERNAL","PLL")
+design.set_property("main_pll","CLKOUT0_DIV","13","PLL")
+design.set_property("main_pll","CLKOUT0_PHASE","0","PLL")
+design.set_property("main_pll","CLKOUT0_PIN","clk_120Mhz","PLL")
+design.set_property("main_pll","EXT_CLK","EXT_CLK0","PLL")
+design.set_property("main_pll","LOCKED_PIN","main_pll_LOCKED","PLL")
+design.set_property("main_pll","M","52","PLL")
+design.set_property("main_pll","N","1","PLL")
+design.set_property("main_pll","O","1","PLL")
+design.set_property("main_pll","REFCLK_FREQ","30.0","PLL")
+design.set_property("main_pll","RSTN_PIN","","PLL")
+design.set_property("main_pll","FEEDBACK_MODE","INTERNAL","PLL")
+
+# Set resource assignment
+design.assign_pkg_pin("button_1","B9")
+design.assign_pkg_pin("button_2","A9")
+design.assign_pkg_pin("extclk_30mhz","L14")
+design.assign_pkg_pin("led","A12")
+design.assign_pkg_pin("led1","B12")
+design.assign_pkg_pin("led2","A11")
+design.assign_pkg_pin("led3","B11")
+design.assign_pkg_pin("uart_rx","B16")
+design.assign_pkg_pin("uart_tx","B15")
+design.assign_resource("main_pll","PLL_BL0","PLL")
