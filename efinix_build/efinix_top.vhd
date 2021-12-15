@@ -4,6 +4,7 @@ library ieee;
 
 library work;
     use work.uart_pkg.all;
+    use work.test_pkg.all;
 
 library math_library;
     use math_library.multiplier_pkg.all;
@@ -28,67 +29,14 @@ end entity top;
 architecture rtl of top is
 
 ------------------------------------------------------------------------
-    type counter is record
-        fast_counter : natural range 0 to 2**16-1;
-        slow_counter : natural range 0 to 2**16-1;
-        led_state : std_logic;
-        fast_limit : natural range 0 to 2**16-1;
-    end record;
-
-    constant init_counter : counter := (0,0, '0', 10e3);
-
-------------------------------------------------------------------------
-    procedure create_counter
-    (
-        signal counter_object : inout counter;
-        signal led_io : out std_logic;
-        fast_limit : in natural range 0 to 2**16-1
-    ) is
-    begin
-        led_io <= counter_object.led_state;
-        counter_object.fast_counter <= counter_object.fast_counter + 1;
-        if counter_object.fast_counter > fast_limit then
-            counter_object.fast_counter <= 0;
-            counter_object.slow_counter <= counter_object.slow_counter + 1;
-        end if;
-        if counter_object.slow_counter = 25e2 then
-            counter_object.slow_counter <= 0;
-            counter_object.led_state <= not counter_object.led_state;
-        end if;
-        
-    end create_counter;
-
-------------------------------------------------------------------------
-    procedure create_counter
-    (
-        signal counter_object : inout counter;
-        signal led_io : out std_logic
-    ) is
-    begin
-        create_counter(counter_object, led_io, counter_object.fast_limit);
-        
-    end create_counter;
-
-    function limit_to_32767
-    (
-        number : integer
-    )
-    return integer
-    is
-    begin
-        if number > 32767 then
-            return 32767;
-        else
-            return number;
-        end if;
-    end limit_to_32767;
-
-------------------------------------------------------------------------
+    signal fast_limit   : natural range 0 to 2**16-1 := init_counter.fast_limit;
     signal led_blinker  : counter                    := init_counter;
     signal led_blinker1 : counter                    := init_counter;
     signal led_blinker2 : counter                    := init_counter;
-    signal led_blinker3 : counter                    := init_counter;
-    signal fast_limit   : natural range 0 to 2**16-1 := init_counter.fast_limit;
+    signal led_blinker3 : counter                    := (fast_counter => init_counter.fast_counter ,
+                                                         slow_counter => init_counter.slow_counter ,
+                                                         led_state    => init_counter.led_state    ,
+                                                         fast_limit   => init_counter.fast_limit  );
 
 ------------------------------------------------------------------------
     signal uart_clocks   : uart_clock_group;
@@ -97,18 +45,14 @@ architecture rtl of top is
     signal uart_data_in  : uart_data_input_group;
     signal uart_data_out : uart_data_output_group;
 
-    signal counter_for_100khz : natural range 0 to 2**12-1 := 1200;
+    signal counter_for_100khz : natural range 0 to 2**16-1 := 6e3;
     signal counter_for_uart : natural range 0 to 2**16-1 := 0;
 
 ------------------------------------------------------------------------
     signal sincos_multiplier : multiplier_record := init_multiplier;
     signal sincos : sincos_record := init_sincos;
-    signal sine : natural range 0 to 2**16-1 := 0;
 
 ------------------------------------------------------------------------
-    signal sine_vector : std_logic_vector(15 downto 0) := (others => '0');
-    signal test : std_logic := '0';
-
 ------------------------------------------------------------------------
 begin
 
@@ -120,40 +64,43 @@ begin
     begin
         if rising_edge(clk_120Mhz) then
             init_uart(uart_data_in);
-            receive_data_from_uart(uart_data_out, led_blinker2.fast_limit);
 
-            create_counter(led_blinker, led, fast_limit); -- this blinks as fast_limit is not record type
-            create_counter(led_blinker1, led1);           -- this does not blink, initial record value lost
-            create_counter(led_blinker2, led2);           -- this initializes fast_blink with 0
-            create_counter(led_blinker3, led3);           -- this blinks, as fast limit driven with constant
-            led_blinker3.fast_limit <= 25e3;
+            create_counter(led_blinker , led , fast_limit); -- this blinks
+            create_counter(led_blinker1, led1);             -- this does not blink, initial record value 0
+            create_counter(led_blinker2, led2);             -- this works correctly, the button seems to fix it
+            if button_is_pressed(button_2) then
+                led_blinker2.fast_limit <= 38e3;
+            end if;
 
-            create_multiplier(sincos_multiplier);
-            create_sincos(sincos_multiplier, sincos);
+            create_counter(led_blinker3, led3);             -- this blinks correctly
 
-            sine_vector <= std_logic_vector(to_unsigned(limit_to_32767(get_sine(sincos)),16));
+            create_multiplier(sincos_multiplier);     -- this is a multiplier with interface functions
+            create_sincos(sincos_multiplier, sincos); -- this creates a state machine for calculating sine/cosine functions
 
-
-            -- if button(1) = '1' then
-                -- led  <= sine_vector(15);
-                led1 <= sine_vector(14);
-                -- led2 <= sine_vector(13);
-                led3 <= sine_vector(12);
-            -- end if;
-                test  <= button_1;
-                led <= test;
-                led2 <= button_2;
-
+            -- knight rider 
+            if button_is_pressed(button_1) then
+                if get_sine(sincos) > 0 then
+                    led3 <= set_1_when_larger_than(get_sine(sincos), 13e3);
+                    led2 <= set_1_when_larger_than(get_sine(sincos), 18e3);
+                    led1 <= set_1_when_larger_than(get_sine(sincos), 22e3);
+                    led  <= set_1_when_larger_than(get_sine(sincos), 30e3);
+                else
+                    led  <= set_1_when_larger_than(get_sine(sincos), 13e3);
+                    led1 <= set_1_when_larger_than(get_sine(sincos), 18e3);
+                    led2 <= set_1_when_larger_than(get_sine(sincos), 22e3);
+                    led3 <= set_1_when_larger_than(get_sine(sincos), 30e3);
+                end if;
+            end if;
 
             if counter_for_100khz > 0 then
                 counter_for_100khz <= counter_for_100khz - 1;
             else
-                counter_for_100khz <= 1200;
-                transmit_16_bit_word_with_uart(uart_data_in, led_blinker2.fast_limit);
+                counter_for_100khz <= 5000;
+                transmit_16_bit_word_with_uart(uart_data_in, get_cosine(sincos));
                 request_sincos(sincos, counter_for_uart);
                 counter_for_uart <= counter_for_uart + 1;
-
             end if;
+
         end if; --rising_edge
     end process led_blink;	
 

@@ -1,6 +1,7 @@
 echo off
 set source=source/
 
+
 ghdl -a --ieee=synopsys --work=math_library %source%/math_library/multiplier/multiplier_pkg.vhd
 ghdl -a --ieee=synopsys --work=math_library %source%/math_library/sincos/sincos_pkg.vhd
 ghdl -a --ieee=synopsys --work=math_library %source%/math_library/division/division_internal_pkg.vhd
@@ -21,6 +22,8 @@ ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/
 ghdl -a --ieee=synopsys --work=math_library %source%/dynamic_simulation_library/ac_motor_models/permanent_magnet_motor_model_pkg.vhd
 
 ghdl -a --ieee=synopsys %source%/system_clocks_pkg.vhd
+
+ghdl -a --ieee=synopsys efinix_build/test_pkg.vhd
 
 
             ghdl -a --ieee=synopsys %source%/uart/uart_transreceiver/uart_tx/uart_tx_pkg.vhd
