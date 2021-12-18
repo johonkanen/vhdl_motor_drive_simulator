@@ -8,3 +8,7 @@ The project uses submodules, thus it needs to be cloned using
 
 
 git clone --recurse-submodules -j8 https://github.com/johonkanen/vhdl_motor_drive_simulator.git
+
+I have also made a blog post explaining the design
+
+https://hardwaredescriptions.com/field-oriented-motor-control-with-vhdl/
