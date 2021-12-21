@@ -36,7 +36,7 @@ architecture rtl of motor_control_data_processing is
 
     signal speed_control_multiplier : multiplier_record := init_multiplier;
     signal speed_controller : pi_controller_record := init_pi_controller;
-    signal d_reference : int18 := 0;
+    signal d_reference : int18 := -5000;
 
     signal speed_reference : int18 := 15e3;
 

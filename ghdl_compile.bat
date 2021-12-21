@@ -31,6 +31,7 @@ ghdl -a --ieee=synopsys efinix_build/test_pkg.vhd
         ghdl -a --ieee=synopsys %source%/uart/uart_transreceiver/uart_transreceiver_pkg.vhd
     ghdl -a --ieee=synopsys %source%/uart/uart_pkg.vhd
 
+                    ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_data_processing/motor_control/motor_control_pkg.vhd
                 ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_data_processing/motor_control_data_processing_pkg.vhd
             ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_hardware_pkg.vhd
             ghdl -a --ieee=synopsys %source%/system_control/system_hardware/motor_control_hardware/motor_control_hardware.vhd
