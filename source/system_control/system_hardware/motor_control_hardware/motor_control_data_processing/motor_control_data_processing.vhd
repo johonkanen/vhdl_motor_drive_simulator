@@ -5,6 +5,7 @@ library ieee;
 library work;
     use work.system_clocks_pkg.all;
     use work.motor_control_data_processing_pkg.all;
+    use work.motor_control_pkg.all;
 
 library math_library;
     use math_library.multiplier_pkg.all;
@@ -41,6 +42,11 @@ architecture rtl of motor_control_data_processing is
     signal speed_reference : int18 := 15e3;
 
     signal counter_for_100khz : natural range 0 to 2**12-1 := 1000;
+
+    signal motor_control_clocks   : motor_control_clock_record;
+    signal motor_control_FPGA_out : motor_control_FPGA_output_record;
+    signal motor_control_data_in  : motor_control_data_input_record;
+    signal motor_control_data_out : motor_control_data_output_record;
     
 begin
 
@@ -91,5 +97,13 @@ begin
                                                        vq_voltage => -get_control_output(iq_current_control));
         end if; --rising_edge
     end process test_motor_control;	
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+    u_motor_control : motor_control
+    port map( motor_control_clocks   ,
+              motor_control_FPGA_out ,
+              motor_control_data_in  ,
+              motor_control_data_out);
 ------------------------------------------------------------------------
 end rtl;
