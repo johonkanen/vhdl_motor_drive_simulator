@@ -107,10 +107,8 @@ architecture rtl of top is
         signal hw_multiplier : inout multiplier_record;
         signal lcr_filter_object : inout test_lcr_record
     ) is
-        -- if aliases on these are used, then the code does not work.
-        -- workin version consumes 1433 logic elements and non working version ~1070 logic elements
-        -- alias inductor_current        is test_lcr.inductor_current             ;
-        -- alias capacitor_voltage       is test_lcr.capacitor_voltage            ;
+        alias inductor_current        is lcr_filter_object.inductor_current       ;
+        alias capacitor_voltage       is lcr_filter_object.capacitor_voltage      ;
         alias process_counter         is lcr_filter_object.process_counter        ;
         alias process_counter2        is lcr_filter_object.process_counter2       ;
         alias current_state_equation  is lcr_filter_object.current_state_equation ;
@@ -120,10 +118,20 @@ architecture rtl of top is
         alias u_in                    is lcr_filter_object.u_in                   ;
         alias u_in_counter            is lcr_filter_object.u_in_counter           ;
     begin
+
+        -- working version consumes 1422 logic elements and non working version ~1070 logic elements
+
+        -- this works
+        create_state_variable(lcr_filter_object.inductor_current  , hw_multiplier , current_state_equation);
+        create_state_variable(lcr_filter_object.capacitor_voltage , hw_multiplier , voltage_state_equation);
+
+        -- this does not, uses aliases for inductor_current and capacitor_voltage
+        -- create_state_variable(inductor_current  , hw_multiplier , current_state_equation);
+        -- create_state_variable(capacitor_voltage , hw_multiplier , voltage_state_equation);
         
         CASE process_counter is
-            WHEN 0 => multiply_and_increment_counter(hw_multiplier , process_counter , get_state(lcr_filter_object.capacitor_voltage) , R_load);
-            WHEN 1 => multiply_and_increment_counter(hw_multiplier , process_counter , get_state(lcr_filter_object.inductor_current)  , R_inductor);
+            WHEN 0 => multiply_and_increment_counter(hw_multiplier , process_counter , get_state(capacitor_voltage) , R_load);
+            WHEN 1 => multiply_and_increment_counter(hw_multiplier , process_counter , get_state(inductor_current)  , R_inductor);
             WHEN others =>  -- do nothing
         end CASE;
 
@@ -137,28 +145,27 @@ architecture rtl of top is
             WHEN 1 => 
                 if multiplier_is_ready(w_multiplier) then
                     current_state_equation <= get_multiplier_result(w_multiplier, 15);
-                    voltage_state_equation <= -voltage_state_equation + test_lcr.inductor_current;
+                    voltage_state_equation <= -voltage_state_equation + inductor_current;
                     increment(process_counter2);
                 end if;
 
             WHEN 2 => 
-                current_state_equation <= -current_state_equation - test_lcr.capacitor_voltage + u_in;
+                current_state_equation <= -current_state_equation - capacitor_voltage + u_in;
                 increment(process_counter2);
 
             WHEN 3 => 
-                request_state_variable_calculation(lcr_filter_object.inductor_current);
+                request_state_variable_calculation(inductor_current);
                 increment(process_counter2);
                       
             WHEN 4 => 
-                if state_variable_calculation_is_ready(lcr_filter_object.inductor_current) then
-                    request_state_variable_calculation(lcr_filter_object.capacitor_voltage);
+                if state_variable_calculation_is_ready(inductor_current) then
+                    request_state_variable_calculation(capacitor_voltage);
                     increment(process_counter2);
                 end if;
 
             WHEN others =>  -- do nothing
         end CASE;
-        create_state_variable(lcr_filter_object.inductor_current  , hw_multiplier , current_state_equation);
-        create_state_variable(lcr_filter_object.capacitor_voltage , hw_multiplier , voltage_state_equation);
+
     end create_test_lcr_filter;
 ------------------------------------------------------------------------
 
@@ -187,30 +194,18 @@ begin
                 led_blinker2.fast_limit <= 38e3;
             end if;
 
-            create_counter(led_blinker3, led3, led_blinker3.fast_limit); -- this blinks correctly
+            create_counter(led_blinker3, led3, led_blinker3.fast_limit);
 
-            create_multiplier(sincos_multiplier);     -- this is a multiplier with interface functions
-            create_sincos(sincos_multiplier, sincos); -- this creates a state machine for calculating sine/cosine functions
-            create_sincos(sincos_multiplier, sincos2); -- this creates a state machine for calculating sine/cosine functions
+            create_multiplier(sincos_multiplier)      ;
+            create_sincos(sincos_multiplier, sincos)  ;
+            create_sincos(sincos_multiplier, sincos2) ;
 
             if sincos_is_ready(sincos) then
                 request_sincos(sincos2, counter_for_uart);
             end if;
 
-             -- this creates a state machine for lcr filter simulator, but it crashes the build
-            --create_lcr_filter(lcr_filter, sincos_multiplier, 10, 0);
-
             create_multiplier(w_multiplier);
             create_test_lcr_filter(w_multiplier, test_lcr);
-
-            --------------------------------------------------
-            -- create_pmsm_model(
-            --     pmsm_model       ,
-            --     id_multiplier    ,
-            --     iq_multiplier    ,
-            --     w_multiplier     ,
-            --     angle_multiplier ,
-            --     default_motor_parameters);
 
             -- knight rider 
             if button_is_pressed(button_1) then
@@ -243,7 +238,6 @@ begin
                 counter_for_100khz <= 1200;
                 transmit_16_bit_word_with_uart(uart_data_in, get_state(test_lcr.capacitor_voltage) + 32768);
                 request_sincos(sincos, counter_for_uart);
-                -- calculate_lcr_filter(lcr_filter);
                 counter_for_uart <= counter_for_uart + 1;
             end if;
 
