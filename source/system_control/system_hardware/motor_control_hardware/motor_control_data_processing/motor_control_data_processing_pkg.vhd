@@ -20,16 +20,16 @@ package motor_control_data_processing_pkg is
     end record;
     
     type motor_control_data_processing_data_input_record is record
-        angle : integer;
-        angular_speed : integer;
-        d_current     : integer;
-        q_current     : integer;
-        speed_reference : integer;
+        angle           : integer range -2**17 to 2**17-1;
+        angular_speed   : integer range -2**17 to 2**17-1;
+        d_current       : integer range -2**17 to 2**17-1;
+        q_current       : integer range -2**17 to 2**17-1;
+        speed_reference : integer range -2**17 to 2**17-1;
     end record;
     
     type motor_control_data_processing_data_output_record is record
-        vd_voltage : integer;
-        vq_voltage : integer;
+        vd_voltage : integer range -2**17 to 2**17-1;
+        vq_voltage : integer range -2**17 to 2**17-1;
     end record;
     
     component motor_control_data_processing is

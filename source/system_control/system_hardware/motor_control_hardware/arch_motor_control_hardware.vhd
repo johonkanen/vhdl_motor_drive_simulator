@@ -61,9 +61,8 @@ architecture simulated of motor_control_hardware is
 begin
     motor_control_hardware_FPGA_out <= (motor_control_data_processing_FPGA_out => motor_control_data_processing_FPGA_out);
 
-
+------------------------------------------------------------------------
     motor_simulator : process(main_clock)
-        
     begin
         if rising_edge(main_clock) then
             create_multiplier(id_multiplier);
@@ -72,7 +71,6 @@ begin
             create_multiplier(angle_multiplier);
             create_multiplier(transform_multiplier);
             create_multiplier(sincos_multiplier);
-
 
             --------------------------------------------------
             create_sincos(sincos_multiplier, sincos);
@@ -90,8 +88,6 @@ begin
                     simulator_counter <= simulator_counter - 1;
                 else
                     simulator_counter <= counter_at_100khz;
-
-
                     request_id_calculation(pmsm_model , vd_input_voltage);
                     request_iq_calculation(pmsm_model , vq_input_voltage );
 
@@ -109,9 +105,7 @@ begin
                     end if;
                 end if;
 
-
-
-
+            --------------------------------------------------
                 CASE stimulus_counter is
                     WHEN 32768 => set_load_torque(pmsm_model, 20e3);
                     WHEN 16384 => speed_reference <= 10e3;
@@ -119,7 +113,6 @@ begin
                     WHEN 0 => set_load_torque(pmsm_model, -20e3);
                     WHEN others => -- do nothing
                 end CASE;
-
 
             --------------------------------------------------
                 motor_control_hardware_data_out.d_current <= get_q_component(pmsm_model);
@@ -129,7 +122,6 @@ begin
                                                          d_current       => get_d_component(pmsm_model),
                                                          q_current       => get_q_component(pmsm_model),
                                                          speed_reference => speed_reference);
-
         end if; --rising_edge
     end process motor_simulator;	
 

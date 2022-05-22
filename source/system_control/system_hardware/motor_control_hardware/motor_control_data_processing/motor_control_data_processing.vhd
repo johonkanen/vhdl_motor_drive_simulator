@@ -2,10 +2,9 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-library work;
     use work.system_clocks_pkg.all;
     use work.motor_control_data_processing_pkg.all;
-    use work.motor_control_pkg.all;
+    -- use work.motor_control_pkg.all;
 
 library math_library;
     use math_library.multiplier_pkg.all;
@@ -43,10 +42,10 @@ architecture rtl of motor_control_data_processing is
 
     signal counter_for_100khz : natural range 0 to 2**12-1 := 1000;
 
-    signal motor_control_clocks   : motor_control_clock_record;
-    signal motor_control_FPGA_out : motor_control_FPGA_output_record;
-    signal motor_control_data_in  : motor_control_data_input_record;
-    signal motor_control_data_out : motor_control_data_output_record;
+    -- signal motor_control_clocks   : motor_control_clock_record;
+    -- signal motor_control_FPGA_out : motor_control_FPGA_output_record;
+    -- signal motor_control_data_in  : motor_control_data_input_record;
+    -- signal motor_control_data_out : motor_control_data_output_record;
     
 begin
 
@@ -100,10 +99,10 @@ begin
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
-    u_motor_control : motor_control
-    port map( motor_control_clocks   ,
-              motor_control_FPGA_out ,
-              motor_control_data_in  ,
-              motor_control_data_out);
+    -- u_motor_control : motor_control
+    -- port map( motor_control_clocks   ,
+    --           motor_control_FPGA_out ,
+    --           motor_control_data_in  ,
+    --           motor_control_data_out);
 ------------------------------------------------------------------------
 end rtl;
