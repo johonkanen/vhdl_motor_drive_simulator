@@ -19,44 +19,39 @@
 
 architecture simulated of motor_control_hardware is
 
-
+    alias main_clock is system_clocks.main_clock;
     -- motor simulator libraries
         use math_library.multiplier_pkg.all;
         use math_library.dq_to_ab_transform_pkg.all;
         use math_library.permanent_magnet_motor_model_pkg.all;
         use math_library.sincos_pkg.all;
     -- end motor simulator libraries
-    signal id_multiplier    : multiplier_record := init_multiplier;
-    signal iq_multiplier    : multiplier_record := init_multiplier;
-    signal w_multiplier     : multiplier_record := init_multiplier;
-    signal angle_multiplier : multiplier_record := init_multiplier;
-
-    alias main_clock is system_clocks.main_clock;
-        
-
     signal motor_control_data_processing_FPGA_in  : motor_control_data_processing_FPGA_input_record;
     signal motor_control_data_processing_FPGA_out : motor_control_data_processing_FPGA_output_record;
     signal motor_control_data_processing_data_in  : motor_control_data_processing_data_input_record;
     signal motor_control_data_processing_data_out : motor_control_data_processing_data_output_record;
-    
-    signal pmsm_model : permanent_magnet_motor_model_record := init_permanent_magnet_motor_model;
-
-    constant counter_at_100khz : natural := 1199;
-    signal simulator_counter : natural range 0 to 2**12-1 := counter_at_100khz;
 
     alias vd_input_voltage is motor_control_data_processing_data_out.vd_voltage;
     alias vq_input_voltage is motor_control_data_processing_data_out.vq_voltage;
 
-    signal transform_multiplier : multiplier_record := init_multiplier;
-    signal dq_to_ab_transform : dq_to_ab_record := init_dq_to_ab_transform;
-
-    signal sincos_multiplier : multiplier_record := init_multiplier;
-    signal sincos : sincos_record := init_sincos;
-
+    constant counter_at_100khz : natural := 1199;
+    signal simulator_counter : natural range 0 to 2**12-1 := counter_at_100khz;
     signal stimulus_counter : natural range 0 to 2**16-1 := 65535;
 
     signal speed_reference : int18 := -20e3;
     signal speed_loop_counter : natural range 0 to 15 := 0;
+
+------------------------------------------------------------------------     
+    signal id_multiplier        : multiplier_record := init_multiplier;
+    signal iq_multiplier        : multiplier_record := init_multiplier;
+    signal w_multiplier         : multiplier_record := init_multiplier;
+    signal angle_multiplier     : multiplier_record := init_multiplier;
+    signal transform_multiplier : multiplier_record := init_multiplier;
+    signal sincos_multiplier    : multiplier_record := init_multiplier;
+
+    signal pmsm_model         : permanent_magnet_motor_model_record := init_permanent_magnet_motor_model;
+    signal sincos             : sincos_record                       := init_sincos;
+    signal dq_to_ab_transform : dq_to_ab_record                     := init_dq_to_ab_transform;
 
 begin
     motor_control_hardware_FPGA_out <= (motor_control_data_processing_FPGA_out => motor_control_data_processing_FPGA_out);
