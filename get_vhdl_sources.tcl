@@ -2,7 +2,7 @@ proc get_vhdl_sources {void}\
 { 
     return \
     { 
-        /math_library/multiplier/multiplier_base_types_18bit_pkg.vhd
+        /math_library/multiplier/multiplier_base_types_22bit_pkg.vhd
         /math_library/multiplier/multiplier_pkg.vhd
         /math_library/sincos/sincos_pkg.vhd
         /math_library/division/division_internal_pkg.vhd

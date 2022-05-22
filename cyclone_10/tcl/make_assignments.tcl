@@ -70,3 +70,5 @@
 	set_global_assignment -name REMOVE_DUPLICATE_REGISTERS ON
 	set_global_assignment -name EDA_GENERATE_FUNCTIONAL_NETLIST ON -section_id eda_simulation
 	set_global_assignment -name SAFE_STATE_MACHINE ON
+	set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
+	set_global_assignment -name MUX_RESTRUCTURE ON
