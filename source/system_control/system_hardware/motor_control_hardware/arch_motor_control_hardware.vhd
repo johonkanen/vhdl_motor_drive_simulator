@@ -41,6 +41,54 @@ architecture simulated of motor_control_hardware is
     signal speed_reference : int18 := -20e3;
     signal speed_loop_counter : natural range 0 to 15 := 0;
 
+------------------------------------------------------------------------
+    type all_in_one_motor_model_record is record
+        id_multiplier        : multiplier_record;
+        iq_multiplier        : multiplier_record;
+        w_multiplier         : multiplier_record;
+        angle_multiplier     : multiplier_record;
+        transform_multiplier : multiplier_record;
+        sincos_multiplier    : multiplier_record;
+
+        pmsm_model         : permanent_magnet_motor_model_record;
+        sincos             : sincos_record                      ;
+        dq_to_ab_transform : dq_to_ab_record                    ;
+    end record;
+------------------------------------------------------------------------
+    constant init_all_in_one_motor_model : all_in_one_motor_model_record := (
+        init_multiplier, init_multiplier,
+        init_multiplier, init_multiplier,
+        init_multiplier, init_multiplier,
+        init_permanent_magnet_motor_model,
+        init_sincos,
+        init_dq_to_ab_transform);
+------------------------------------------------------------------------
+    procedure create_all_in_one_motor_model
+    (
+        signal motor_model_object : inout all_in_one_motor_model_record
+    ) is
+        alias m is motor_model_object;
+    begin
+            create_multiplier(m.id_multiplier);
+            create_multiplier(m.iq_multiplier);
+            create_multiplier(m.w_multiplier);
+            create_multiplier(m.angle_multiplier);
+            create_multiplier(m.transform_multiplier);
+            create_multiplier(m.sincos_multiplier);
+            --------------------------------------------------
+            create_sincos(m.sincos_multiplier, m.sincos);
+            request_sincos(m.sincos, get_electrical_angle(m.pmsm_model));
+            --------------------------------------------------
+            create_pmsm_model(
+                m.pmsm_model       ,
+                m.id_multiplier    ,
+                m.iq_multiplier    ,
+                m.w_multiplier     ,
+                m.angle_multiplier ,
+                default_motor_parameters);
+            --------------------------------------------------
+    end create_all_in_one_motor_model;
+
 ------------------------------------------------------------------------     
     signal id_multiplier        : multiplier_record := init_multiplier;
     signal iq_multiplier        : multiplier_record := init_multiplier;
