@@ -89,82 +89,69 @@ architecture simulated of motor_control_hardware is
             --------------------------------------------------
     end create_all_in_one_motor_model;
 
-------------------------------------------------------------------------     
-    signal id_multiplier        : multiplier_record := init_multiplier;
-    signal iq_multiplier        : multiplier_record := init_multiplier;
-    signal w_multiplier         : multiplier_record := init_multiplier;
-    signal angle_multiplier     : multiplier_record := init_multiplier;
-    signal transform_multiplier : multiplier_record := init_multiplier;
-    signal sincos_multiplier    : multiplier_record := init_multiplier;
+    signal motor_model : all_in_one_motor_model_record := init_all_in_one_motor_model;
 
-    signal pmsm_model         : permanent_magnet_motor_model_record := init_permanent_magnet_motor_model;
-    signal sincos             : sincos_record                       := init_sincos;
-    signal dq_to_ab_transform : dq_to_ab_record                     := init_dq_to_ab_transform;
+------------------------------------------------------------------------     
 
 begin
     motor_control_hardware_FPGA_out <= (motor_control_data_processing_FPGA_out => motor_control_data_processing_FPGA_out);
 
 ------------------------------------------------------------------------
     motor_simulator : process(main_clock)
+        alias id_multiplier        is motor_model.id_multiplier        ;
+        alias iq_multiplier        is motor_model.iq_multiplier        ;
+        alias w_multiplier         is motor_model.w_multiplier         ;
+        alias angle_multiplier     is motor_model.angle_multiplier     ;
+        alias transform_multiplier is motor_model.transform_multiplier ;
+        alias sincos_multiplier    is motor_model.sincos_multiplier    ;
+        alias pmsm_model           is motor_model.pmsm_model           ;
+        alias sincos               is motor_model.sincos               ;
+        alias dq_to_ab_transform   is motor_model.dq_to_ab_transform   ;
     begin
         if rising_edge(main_clock) then
-            create_multiplier(id_multiplier);
-            create_multiplier(iq_multiplier);
-            create_multiplier(w_multiplier);
-            create_multiplier(angle_multiplier);
-            create_multiplier(transform_multiplier);
-            create_multiplier(sincos_multiplier);
 
             --------------------------------------------------
-            create_sincos(sincos_multiplier, sincos);
-            request_sincos(sincos, get_electrical_angle(pmsm_model));
+            create_all_in_one_motor_model(motor_model);
             --------------------------------------------------
-            create_pmsm_model(
-                pmsm_model       ,
-                id_multiplier    ,
-                iq_multiplier    ,
-                w_multiplier     ,
-                angle_multiplier ,
-                default_motor_parameters);
-            --------------------------------------------------
-                if simulator_counter > 0 then
-                    simulator_counter <= simulator_counter - 1;
+
+            if simulator_counter > 0 then
+                simulator_counter <= simulator_counter - 1;
+            else
+                simulator_counter <= counter_at_100khz;
+                request_id_calculation(pmsm_model , vd_input_voltage);
+                request_iq_calculation(pmsm_model , vq_input_voltage );
+
+                if stimulus_counter > 0 then
+                    stimulus_counter <= stimulus_counter - 1;
                 else
-                    simulator_counter <= counter_at_100khz;
-                    request_id_calculation(pmsm_model , vd_input_voltage);
-                    request_iq_calculation(pmsm_model , vq_input_voltage );
-
-                    if stimulus_counter > 0 then
-                        stimulus_counter <= stimulus_counter - 1;
-                    else
-                        stimulus_counter <= 65535;
-                    end if;
-
-                    speed_loop_counter <= speed_loop_counter + 1;
-                    if speed_loop_counter = 9 then
-                        speed_loop_counter <= 0;
-                        request_electrical_angle_calculation(pmsm_model);
-                        request_angular_speed_calculation(pmsm_model);
-                    end if;
+                    stimulus_counter <= 65535;
                 end if;
 
-            --------------------------------------------------
-                CASE stimulus_counter is
-                    WHEN 32768 => set_load_torque(pmsm_model, 20e3);
-                    WHEN 16384 => speed_reference <= 10e3;
-                    WHEN 49152 => speed_reference <= -20e3;
-                    WHEN 0 => set_load_torque(pmsm_model, -20e3);
-                    WHEN others => -- do nothing
-                end CASE;
+                speed_loop_counter <= speed_loop_counter + 1;
+                if speed_loop_counter = 9 then
+                    speed_loop_counter <= 0;
+                    request_electrical_angle_calculation(pmsm_model);
+                    request_angular_speed_calculation(pmsm_model);
+                end if;
+            end if;
 
             --------------------------------------------------
-                motor_control_hardware_data_out.d_current <= get_q_component(pmsm_model);
+            CASE stimulus_counter is
+                WHEN 32768 => set_load_torque(pmsm_model, 20e3);
+                WHEN 16384 => speed_reference <= 10e3;
+                WHEN 49152 => speed_reference <= -20e3;
+                WHEN 0 => set_load_torque(pmsm_model, -20e3);
+                WHEN others => -- do nothing
+            end CASE;
 
-                motor_control_data_processing_data_in <= (angular_speed  => get_angular_speed(pmsm_model),
-                                                         angle           => get_electrical_angle(pmsm_model),
-                                                         d_current       => get_d_component(pmsm_model),
-                                                         q_current       => get_q_component(pmsm_model),
-                                                         speed_reference => speed_reference);
+            --------------------------------------------------
+            motor_control_hardware_data_out.d_current <= get_q_component(pmsm_model);
+
+            motor_control_data_processing_data_in <= (angular_speed  => get_angular_speed(pmsm_model),
+                                                     angle           => get_electrical_angle(pmsm_model),
+                                                     d_current       => get_d_component(pmsm_model),
+                                                     q_current       => get_q_component(pmsm_model),
+                                                     speed_reference => speed_reference);
         end if; --rising_edge
     end process motor_simulator;	
 
